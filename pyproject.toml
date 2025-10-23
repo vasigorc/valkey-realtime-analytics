@@ -1,0 +1,9 @@
+[project]
+name = "valkey-realtime-analytics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "valkey-glide>=2.1.1",
+]
