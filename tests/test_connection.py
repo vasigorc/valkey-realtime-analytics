@@ -54,13 +54,50 @@ async def test_connection_pooling():
     start = time.perf_counter()
 
     async with ValkeyConnection() as client:
-        for i in range(iterations):
+        for _ in range(iterations):
             await client.ping()
 
     pooled_time = time.perf_counter() - start
 
     print(f"✅ {iterations} operations in {pooled_time:.3f}s")
     print(f"  Average: {pooled_time / iterations * 1000:.2f}ms per operation")
+
+
+async def test_concurrent_access():
+    print("\n🧪 Test 4: Concurrent Access")
+    print("-" * 50)
+
+    try:
+        async with ValkeyConnection() as client:
+            await client.set("shared:counter", "0")
+
+        async def worker():
+            async with ValkeyConnection() as client:
+                await client.incr("shared:counter")
+
+        num_workers = 10
+        await asyncio.gather(*[worker() for _ in range(num_workers)])
+
+        async with ValkeyConnection() as client:
+            result = await client.get("shared:counter")
+
+            match result:
+                case bytes() as value:
+                    result_int = int(value.decode("utf-8"))
+                    if result_int == num_workers:
+                        print(f"✅ Counter correct: {result_int}/{num_workers}")
+                    else:
+                        print(
+                            f"❌ Race detected! Got {result_int} expectected {num_workers}"
+                        )
+                        sys.exit(1)
+                case None:
+                    print("❌ Counter key not found!")
+                    sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Concurrent test failed {e}")
+        sys.exit(1)
 
 
 async def main():
@@ -73,6 +110,7 @@ async def main():
         await test_basic_connection()
         await test_basic_operations()
         await test_connection_pooling()
+        await test_concurrent_access()
     finally:
         await valkey_pool.close()
 
