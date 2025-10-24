@@ -30,7 +30,7 @@ Learn production caching patterns through hands-on implementation:
 uv sync
 
 # Verify connection
-uv run python tests/test_connection.py
+uv run python -m tests.test_connection
 ```
 
 ## Project Structure

@@ -1,12 +1,9 @@
+import time
 import sys
-from pathlib import Path
 
 import asyncio
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-# from src.valkey_client import valkey_pool, ValkeyConnection
-from valkey_client import valkey_pool, ValkeyConnection
+from src.valkey_client import valkey_pool, ValkeyConnection
 
 
 async def test_basic_connection():
@@ -47,15 +44,35 @@ async def test_basic_operations():
         sys.exit(1)
 
 
+async def test_connection_pooling():
+    print("\n🧪 Test 3: Connection Pool Performance")
+    print("-" * 50)
+
+    iterations = 100
+
+    # Measure pooled connections
+    start = time.perf_counter()
+
+    async with ValkeyConnection() as client:
+        for i in range(iterations):
+            await client.ping()
+
+    pooled_time = time.perf_counter() - start
+
+    print(f"✅ {iterations} operations in {pooled_time:.3f}s")
+    print(f"  Average: {pooled_time / iterations * 1000:.2f}ms per operation")
+
+
 async def main():
     """Run all tests."""
     print("=" * 50)
-    print("     VALKEY CONNECTION POOL TESTS")
+    print("         VALKEY CONNECTION POOL TESTS")
     print("=" * 50)
 
     try:
         await test_basic_connection()
         await test_basic_operations()
+        await test_connection_pooling()
     finally:
         await valkey_pool.close()
 
