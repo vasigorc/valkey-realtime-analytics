@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncpg>=0.30.0",
     "testcontainers>=4.13.2",
+    "testcontainers-postgres>=0.0.1rc1",
     "valkey-glide>=2.1.1",
 ]
